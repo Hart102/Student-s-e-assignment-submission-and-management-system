@@ -1,0 +1,135 @@
+:root{
+    --Red: #da4d44;
+    --Green: #4ab969;
+    --White: #fff;
+    --Ash: #caced2;
+    --Body-bg: #f4f8f9;
+}
+
+*{
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif !important;
+}
+
+body{
+    box-sizing: border-box;
+}
+
+.pointer{
+    cursor: pointer;
+}
+
+.scale_in{
+    transform: scale(1);
+    transition: 0.9s;
+    z-index: 999 !important;
+}
+
+.scale_out{
+    transform: scale(0.5);
+    transition: 0.9s;
+}
+
+.admin nav {
+    position: fixed;
+    width: 100%;
+    z-index: 999;
+    top: 0;
+}
+
+.admin .header_container > div{
+    background:  #15242b !important;
+}
+
+.admin .header_container > menu{
+    background:  #edeef2 !important;
+}
+
+.question_display_box, .question, .student_display_container,
+.theory{
+    width: 100%;
+    position: absolute;
+    right: 0;
+}
+
+
+/* //////////// MAIN CONTAINER ///////////// */
+.main-container{
+    width: 100%;
+    padding: 7em 0 !important;
+}
+
+.main-container .box-container{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, auto));
+    gap: 20px;
+}
+
+
+
+/* ////////////// SET QUESTION ///////// */
+.set_question .line {
+    background: #e6e6e6;
+}
+
+.set_question .options input::placeholder {
+    color: #999 !important;
+}
+
+textarea {
+    width: 100%;
+    height: 35vh;
+}
+
+
+/* /////// Overview component styling ///////////// */
+.box-container .box:nth-child(odd){
+    background: var(--White);
+}
+
+
+
+/* //////// Reused component Styling //////// */
+
+.student_display_container .display_box:nth-child(odd) .left_line, 
+.question_display_box .display_box:nth-child(odd) .left_line{
+    background: var(--Green) !important;
+}
+
+.student_display_container .display_box:nth-child(even) .left_line,
+.question_display_box .display_box:nth-child(even) .left_line{
+    background: var(--Red) !important;
+}
+/* //////// Reused component Styling  End//////// */
+
+
+
+/* ///////// Question Display Box component Styling ///////// */
+.h5{
+    color: var(--Ash);
+}
+
+
+
+
+
+
+/* //////// Student Display Box component Styling  End//////// */
+
+.student_display_container .box p, .box b{
+    flex: 1;
+}
+.display_box p{
+    flex: 1;
+}
+
+.display_box .title{
+    color: var(--Green) !important;
+}
+
+/* .student_display_container .display_box .box:nth-child(even) .student_name{
+    color: var(--Green) !important;
+}
+
+.student_display_container .display_box .box:nth-child(odd) .student_name{
+    color: var(--Red);
+} */

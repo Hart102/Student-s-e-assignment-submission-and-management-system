@@ -1,0 +1,61 @@
+:root{
+    --White: #fff;
+    --Black: #000;
+}
+
+.pointer{
+    cursor: pointer;
+}
+ 
+.Cover_page header {
+    background: #453759;
+}
+
+
+
+.Cover_page .form-container {
+    width: 500px;
+    max-width: 100%;
+    position: relative;
+    box-shadow: 0 0 12px 0.1em #e0e0e0 !important;
+}
+
+.Cover_page .form-container form{
+    width: 100%;
+    position: absolute;
+}
+
+.Cover_page form input, .Cover_page select, 
+.sign_up .btn, .sign_in .btn {
+    border-radius: 30px;
+}
+
+.Cover_page .btn {
+    background: #453759 !important;
+}
+
+
+/* ////////// LEVEL COMPONENT STYLING ///////////// */
+.Cover_page .level .btn{
+    border-top-right-radius: 30px !important;
+    border-bottom-right-radius: 30px !important;
+}
+
+.Cover_page .level select {
+    border-top-right-radius: 2px !important;
+    border-bottom-right-radius: 2px !important;
+}
+
+
+.scale_out{
+    opacity: 0;
+    transition: 0.5s;
+    z-index: 0;
+}
+
+.scale_in{
+    opacity: 1;
+    z-index: 1;
+    transition: 0.5s;
+    padding: 3em 1.8em !important;
+}
