@@ -15,20 +15,20 @@ const login_auth = Joi.object().keys({ // SIGN-UP FORM VALIDATION
     reg_no: Joi.string().required(),
 });
 
+const lecturer_login = Joi.object().keys({ // LECTURER LOGIN FORM VALIDATION
+    username: Joi.string().required(),
+    password: Joi.string().required(),
+});
 
-let today = new Date();
-const Storage = MULTER.diskStorage({ // File upload module
-    destination: path.join(__dirname, '../Client/public/Storage'),
-    filename: (req, file, callback) => {
-        callback(null, file.destination + "_" + file.originalname)
-    }
-})
-
-const file_upload = MULTER({storage: Storage}).single("file")
-
+const level_auth = Joi.object().keys({ // LEVEL FORM VALIDATION
+    level: Joi.string().required(),
+    dept: Joi.string().required(),
+    course: Joi.string().required(),
+});
 
 module.exports ={ 
     sign_up_auth,
     login_auth,
-    file_upload
+    lecturer_login,
+    level_auth
 }

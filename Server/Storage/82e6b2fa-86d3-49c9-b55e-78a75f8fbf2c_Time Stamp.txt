@@ -1,0 +1,45 @@
+// ################################ FOR TIME STAMP #####################################
+function timeSince(date) {
+
+var seconds = Math.floor((new Date() - date) / 1000);
+
+
+var interval = seconds / date;
+
+if (interval > 1) {
+  return Math.floor(interval) + " years";
+}
+interval = seconds / 2592000;
+if (interval > 1) {
+  return Math.floor(interval) + " months";
+}
+interval = seconds / 86400;
+if (interval > 1) {
+  return Math.floor(interval) + " days";
+}
+interval = seconds / 3600;
+if (interval > 1) {
+  return Math.floor(interval) + " hours ago";
+}
+interval = seconds / 60;
+if (interval >= 2) {
+    return Math.floor(interval) + " minutes ago";
+}
+interval = seconds / 60;
+if (interval >= 1) {
+  return Math.floor(interval) + " minute ago";
+}
+return Math.floor(seconds) + " seconds ago";
+}
+var d = new Date()
+var c = d.getTime()
+
+document.getElementById('days').innerHTML = d
+// document.getElementById('days').innerHTML = timeSince(new Date(Date.now()-aDay))
+document.getElementById('mins').innerHTML = c
+setInterval(() => {
+document.getElementById('hours').innerHTML = timeSince(1660949501136)
+}, 1000);
+##############################################################################
+
+// ################################ FOR TIME STAMP #####################################
