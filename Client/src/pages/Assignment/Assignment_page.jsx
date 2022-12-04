@@ -15,6 +15,8 @@ const Assignment_page = () => {
   const location = useLocation(),
   navigation = useNavigate();
 
+
+
   const [theory_questions, setTheory_questions] = useState('')
   const [objective_questions, setObjective_questions] = useState('')
   const [switch_questions, setSwitch_questions] = useState('')
@@ -33,7 +35,6 @@ const Assignment_page = () => {
   const fetch_selected_questions = async (question) => { 
     const response = await PostData('http://localhost:5000/fetch_selected_question', question)
 
-    console.log(response)
     if (response.data[0].question_type == 'thoery'){
       setTheory_questions(response.data)
     }else{
@@ -98,17 +99,18 @@ const Assignment_page = () => {
     <div className="col-md-12 d-flex px-4">
       <ul className='list-unstyled text-capitaliz py-5 my-5 col-md-2 border-right'>
         <h5>Avaliable assessments: </h5>
-        {location.state !== null && location.state.map((questions, indx) => 
+        {location.state ? location.state.map((questions, indx) => 
+          console.log(questions)
 
           //********* Assessment List ******************
-          <div className="my-3 pointer text-capitalize" key={indx} onClick={() => select_assesment(questions._id )}>
-            <span className="d-flex">
-              <li>{indx + 1}</li>
-              <li className='ml-3'>{questions.courseTitle}</li>
-            </span>
-            <li className='ml-3'>{questions.date}</li> 
-          </div>
-        )}
+          // <div className="my-3 pointer text-capitalize" key={indx} onClick={() => select_assesment(questions._id )}>
+          //   <span className="d-flex">
+          //     <li>{indx + 1}</li>
+          //     <li className='ml-3'>{questions.courseTitle}</li>
+          //   </span>
+          //   <li className='ml-3'>{questions.date}</li> 
+          // </div>
+        ) : null}
       </ul>
 
 

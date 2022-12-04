@@ -28,36 +28,55 @@ const Level = () => {
     //Checking if the student have already participated in the assesment
     const [check_avaliable_assesment, setCheck_avaliable_assesment] = useState('');
     const confirm_participant = async () => {
-        const response = await PostData('http://localhost:5000/confirm_participant', {user_assesment: logged_in_user.assesments, assignmentInfo})
+        const response = await PostData(
+            'http://localhost:5000/confirm_participant', 
+            {user_assesment: logged_in_user.assesments, assignmentInfo}
+        )
 
-        if (!response.data.error) {
-            navigation('/assignment', {state: response.data})
+        console.log(response.data);
 
-        }else{
-           setCheck_avaliable_assesment(response.data.error)
-        }
+        // if (!response.data.error) {
+        //     navigation('/assignment', {state: response.data})
+
+        // }else{
+        //    setCheck_avaliable_assesment(response.data.error)
+        // }
     };
    
 
 
   return (
-    <form className={swich_form == 'LEVEL' ? "scale_in form-group level col-md-4 mx-auto my-4 py-lg-5 px-lg-3 px-5 text-center" : 'scale_out'}>
-        <div className="display-6 font-weight-bold text-center mb-3 mt-5"><span className="text-warning">Lev</span>el</div>
-        <p className="text-center">Select level and departmant to see their assignment</p>
+    <form className={swich_form == 'LEVEL' ? 
+        "scale_in form-group level col-md-4 mx-auto my-4 py-lg-5 px-lg-3 px-5 text-center" : 
+        'scale_out'
+    }>
+
+        <div className="display-6 font-weight-bold text-center mb-3 mt-5">
+            <span className="text-warning">Lev</span>el
+        </div>
+        <p className="text-center">
+            Select level and departmant to see their assignment
+        </p>
 
         <div className="mt-5">
-            <InputField type={'text'} placeholder={'Course title'} onchange={(e) => {
+            <InputField 
+                type={'text'} 
+                placeholder={'Course title'} 
+                onchange={(e) => {
                 setCheck_avaliable_assesment('')
                 setCourse(e.target.value)
             }}/>
 
-            <InputField type={'text'} placeholder={'Department'} onchange={(e) => {
+            <InputField 
+                type={'text'} placeholder={'Department'} 
+                onchange={(e) => {
                 setCheck_avaliable_assesment('')
                 setDept(e.target.value)
             }}/>
 
             <div className="mt-3 text-white d-flex align-items-center">
-                <select className='select py-3 my-2 px-4 form-control' onChange={(e) => {
+                <select className='select py-3 my-2 px-4 form-control' 
+                    onChange={(e) => {
                     setLevel(e.target.value)
                 }}>
                 <option value="0" defaultValue={true} disabled={false}>Select Level</option>
@@ -69,12 +88,16 @@ const Level = () => {
                 <option value={"600L"}>600L</option>
                 </select>
 
-                <button className="btn py-3 px-4 text-white text-capitalize font-weight-bold" onClick={(e) => {
+                <button className="btn py-3 px-4 text-white text-capitalize font-weight-bold" 
+                    onClick={(e) => {
                     e.preventDefault()
                     confirm_participant()
                 }}>next</button>
             </div>
-            <div className={check_avaliable_assesment != '' ? 'alart text-center text-warning text-capitalize scale_in mx-auto' : null}>
+
+            <div className={check_avaliable_assesment != '' ? 
+                'alart text-center text-warning text-capitalize scale_in mx-auto' : 
+            null}>
                 <b>{check_avaliable_assesment}</b>
             </div>
         </div>
