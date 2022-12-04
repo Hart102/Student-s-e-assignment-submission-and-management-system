@@ -15,6 +15,7 @@ import Assignment_page from "./pages/Assignment/Assignment_page";
 import Admin from "./pages/Admin/Admin";
 import Obj_results from "./pages/Obj_results";
 import Read_assessment_file from "./pages/Assignment/Read_assessment_file";
+import Lecturer_login from "./pages/Admin/Lecturer_login";
 
 const App = () => {
   return (
@@ -26,6 +27,7 @@ const App = () => {
         <Route path="/admin" element={<Admin />} />
         <Route path="/admin/results" element={<Obj_results />} />
         <Route path="/admin/read_assessment" element={<Read_assessment_file />} />
+        <Route path="/lecturer_login" element={<Lecturer_login />} />
       </Routes>
     </BrowserRouter>
   )

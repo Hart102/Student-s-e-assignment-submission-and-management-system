@@ -1,19 +1,18 @@
-import { useState } from "react"
+import Axios from "axios";
+import { useState, useEffect } from "react"
+
 import { useSelector, useDispatch } from 'react-redux'
 import { login_action, switch_forms } from "../../../Actions";
 
-/////////////////////////////////////////////////////
 import InputField from "./InputField"
 import Form_btn from "./Form_btn";
 import PostData from "../../PostData";
 
-
-
 const Sign_in = () => {
+
     const switch_form = useSelector(state => state.Form_switcher),
     dispatch = useDispatch();
 
-    //////////////////////////////////////////////////
     const [firstname, setFirstname] = useState(''),
     [reg_no, setRegNo] = useState(''),
     [server_msg, setServerMsg] = useState(''),
@@ -23,7 +22,6 @@ const Sign_in = () => {
         reg_no
     };
 
-    //////////////////////////////////////////////////
     const handle_login = async () => { //LOGIN FUNCTION
        const response = await PostData('http://localhost:5000/student/login', userInfo)
        if (!response.data.res) {
@@ -34,6 +32,16 @@ const Sign_in = () => {
             dispatch(switch_forms('LEVEL'))
         }
     }
+
+    const check_session = async () => { // Verify session
+       const response = await Axios.get('http://localhost:5000/student/login')
+       dispatch(login_action(response.data))
+    }
+
+    useEffect(() => {
+        check_session()
+    },[])
+
 
 
   return (

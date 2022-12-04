@@ -12,36 +12,30 @@ const Level = () => {
     navigation = useNavigate(),
     dispatch = useDispatch();
 
-    // console.log(logged_in_user.assesments)
-    
 
-    /////////////////////////////////////////
     const [course, setCourse] = useState(''),
     [level, setLevel] = useState(''),
-    [dept, setDept] = useState(''),
-    [serverMsg, setError] = useState(''),
+    [dept, setDept] = useState('');
 
 
-    ///////////////////////////////
-    assignmentInfo = {
+    const assignmentInfo = {
         level: level.toLowerCase(),
         dept: dept.toLocaleLowerCase(),
         course: course.toLocaleLowerCase()
-    },
+    };
 
     
     //Checking if the student have already participated in the assesment
-    [check_avaliable_assesment, setCheck_avaliable_assesment] = useState(''),
-    confirm_participant = async () => {
+    const [check_avaliable_assesment, setCheck_avaliable_assesment] = useState('');
+    const confirm_participant = async () => {
         const response = await PostData('http://localhost:5000/confirm_participant', {user_assesment: logged_in_user.assesments, assignmentInfo})
-        
-        if (response.data != 'true'){
-            setCheck_avaliable_assesment(response.data)
-            
-        }else{
-            navigation('/assignment', {state: assignmentInfo})
-        }
 
+        if (!response.data.error) {
+            navigation('/assignment', {state: response.data})
+
+        }else{
+           setCheck_avaliable_assesment(response.data.error)
+        }
     };
    
 
@@ -53,13 +47,11 @@ const Level = () => {
 
         <div className="mt-5">
             <InputField type={'text'} placeholder={'Course title'} onchange={(e) => {
-                setError('')
                 setCheck_avaliable_assesment('')
                 setCourse(e.target.value)
             }}/>
 
             <InputField type={'text'} placeholder={'Department'} onchange={(e) => {
-                setError('')
                 setCheck_avaliable_assesment('')
                 setDept(e.target.value)
             }}/>
@@ -79,7 +71,6 @@ const Level = () => {
 
                 <button className="btn py-3 px-4 text-white text-capitalize font-weight-bold" onClick={(e) => {
                     e.preventDefault()
-                    // navigation('/assignment', {state: assignmentInfo})
                     confirm_participant()
                 }}>next</button>
             </div>

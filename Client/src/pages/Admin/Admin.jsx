@@ -9,10 +9,29 @@ import SetQuestion from '../../components/SetQuestion'
 import Question_display_box from '../../components/Question_display_box'
 import SetTheory_quest from '../../components/SetTheory_quest'
 
+import Axios from 'axios'
+import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+
 const Admin = () => {
     const dispatch = useDispatch(),
+    navigation = useNavigate(),
+
     switch_menu = useSelector(state => state.Switch_admin_menu),
-    total_assesments = useSelector(state => state.Capture_total_assesments);
+    total_assesments = useSelector(state => state.Capture_total_assesments),
+    check_session = useSelector(state => state.Capure_lecturer_session);
+
+
+    const lecturer_logout = () => { // Logout function
+        window.location.reload()
+        const response = Axios.get('http://localhost:5000/lecturer_logout')
+        console.log(response)
+    }
+    
+
+    useEffect(() => { // Verify lecturer session
+        if (!check_session) {navigation('/lecturer_login')}
+    },[])
 
 
 
@@ -27,7 +46,7 @@ const Admin = () => {
                     <div className='display-6'>
                         <span className="text-warning">e-</span>campus
                     </div>
-                    <p className='pointer'>Logout</p>
+                    <p className='btn text-white border pointer' onClick={lecturer_logout}>Logout</p>
                 </div>
             </div>
             <menu>
@@ -35,9 +54,9 @@ const Admin = () => {
                     <Sidemenu text={'overview'} onclick={(e) => {
                         dispatch(admin_menu(e.target.textContent))
                     }}/>
-                    <Sidemenu text={'create Obj'} onclick={(e) => {
+                    {/* <Sidemenu text={'create Obj'} onclick={(e) => {
                         dispatch(admin_menu(e.target.textContent))
-                    }}/>
+                    }}/> */}
                     <Sidemenu text={'create theory'} onclick={(e) => {
                         dispatch(admin_menu(e.target.textContent))
                     }}/>
@@ -63,17 +82,17 @@ const Admin = () => {
 
 
                 {/* SET QUSETIONS  */}
-                <div className={switch_menu == 'overview'  ? 'scale_in' : 'scale_out'}>
+                <div className={switch_menu == 'overview'  ? 'scale_in d-block' : 'scale_out d-none'}>
                     <Question_display_box />
                 </div>
 
 
                 {/* Set question */}
-                <div className={switch_menu == 'create Obj' ? 'scale_in' : 'scale_out'}>
+                <div className={switch_menu == 'create Obj' ? 'scale_in d-block' : 'scale_out d-none'}>
                     <SetQuestion/>
                 </div>
 
-                <div className={switch_menu == 'create theory' ? 'scale_in' : 'scale_out'}>
+                <div className={switch_menu == 'create theory' ? 'scale_in d-block' : 'scale_out d-none'}>
                     <SetTheory_quest />
                 </div>
             </div>

@@ -1,8 +1,8 @@
 
-const Options = ({ value, placeholder, id }) => {
+const Options = ({ type, value, placeholder, id }) => {
   return (
     <div className='my-3 col-md-12'>
-      <input type="text" className="form-control py-2" placeholder={placeholder} onChange={value} id={id}/>
+      <input type={type} className="form-control py-2" placeholder={placeholder} onChange={value} id={id}/>
     </div>
   )
 }

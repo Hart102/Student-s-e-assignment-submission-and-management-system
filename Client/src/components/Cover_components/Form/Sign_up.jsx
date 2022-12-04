@@ -1,20 +1,20 @@
 import { useState } from "react"
 import PostData from "../../PostData";
-import { useSelector, useDispatch } from 'react-redux'
-import { switch_forms, login_action } from "../../../Actions";
 
-///////////////////////////////////////
+import { useSelector, useDispatch } from 'react-redux'
+import { switch_forms } from "../../../Actions";
+
 import InputField from "./InputField"
 import Form_btn from "./Form_btn";
 
 const Sign_up = () => {
     const swich_form = useSelector(state => state.Form_switcher),
-    loginMsg = useSelector(err => err.Error_msg),
     dispatch = useDispatch();
     
     const [firstname, setFirstname] = useState(''),
     [lastname, setLastname] = useState(''),
     [dept, setDept] = useState(''),
+
     [reg_no, setReg_no] = useState(''),
     [serverMsg, setServerMsg] = useState(''),
 
@@ -26,10 +26,9 @@ const Sign_up = () => {
     };
 
     const handle_sign_up = async () => { // user signup function
-        const response = await PostData('http://localhost:5000/admin/signUp', userInfo)
+        const response = await PostData('http://localhost:5000/student_sign_up', userInfo)
         if (response.data == 'true') {
             dispatch(switch_forms('login'))
-
         }else{
             setServerMsg(response.data)
         }

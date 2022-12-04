@@ -7,13 +7,22 @@ export const switch_forms = (action) => {
     }
 }
 
-// Capturing loggedin user
+// Student session
 export const login_action = (action) => {
     return{
         type: "LOGGED_USER",
         payload: action
     }
 }
+
+// Verify lecturer's session 
+export const lecturer_session = (action) => {
+    return{
+        type: "LECTURER_SESSION",
+        payload: action
+    }
+}
+
 
 
 // ADMIN MENU ACTION

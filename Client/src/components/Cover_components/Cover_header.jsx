@@ -6,7 +6,7 @@ const Cover_Title = () => {
 
   return (
     <div className="fixed-top">
-        <header className="py-2 navbar">
+        <header className="navbar">
             <div className="container  d-flex justify-content-between align-items-baseline">
                 <div className="logo display-6 text-white font-weight-bold px-lg-2 py-lg-0 p-2">
                     <span className="text-warning">e-</span>campus

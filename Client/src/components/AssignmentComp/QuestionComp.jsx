@@ -10,19 +10,11 @@ const QuestionComp = () => {
   navigation = useNavigate(),
   [questions, setquestions] = useState(''),
   [studentId, setStudentId] = useState('');
-  
 
-  const verify_user_session = async () => { // Student session
-    const response = await Axios.get('http://localhost:5000/student/login')
-    setStudentId(response.data)
-  };
-  
-
-
-  const fetch_question = async (data) => { // Fetching questions
-    const response = await PostData('http://localhost:5000/fetch/user/question', data)
-    setquestions(response.data)
-  }
+  // const fetch_question = async (data) => { // Fetching questions
+  //   const response = await PostData('http://localhost:5000/fetch/user/question', data)
+  //   setquestions(response.data)
+  // }
 
   const removeDuplicates = (arr) => [...new Set(arr)] // Remove duoble answers
 
@@ -73,9 +65,14 @@ const QuestionComp = () => {
     }
   }
 
+  const verify_user_session = async () => { // Student session
+    const response = await Axios.get('http://localhost:5000/student/login')
+    setStudentId(response.data)
+  };
+
   useEffect(() => {
     verify_user_session()
-    fetch_question(location.state)
+    // fetch_question(location.state)
   },[])
 
 

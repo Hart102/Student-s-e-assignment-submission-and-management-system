@@ -1,40 +1,65 @@
+import { useEffect } from "react";
 import { useState } from "react";
 import { useLocation } from "react-router-dom"
+import Options from "../../components/Options";
+import PostData from '../../components/PostData'
 
 
 const Read_assessment_file = () => {
     const location = useLocation()
-    // console.log(location.state.student_details)
     
     const [fullName, setFullName] = useState(`${location.state.student_details.firstname} ${location.state.student_details.lastname}`),
     [regNo, setRegNo] = useState(location.state.student_details.reg_no),
-    [department, setDepartment] = useState(location.state.student_details.reg_no);
+    [department, setDepartment] = useState(location.state.student_details.reg_no),
+    [docs, setDocs] = useState(''),
+    [mark, setMark] = useState('');
 
 
 
-    
-    // const fetch_student_assessment_doc = async () => {
-    //     const response = await PostData('http://localhost:5000/fetch_student_assessment_doc')
-    //     console.log(response.data)
+    const fetch_student_assessment_doc = async () => { // Fetching the assessment document
+        const response = await PostData('http://localhost:5000/fetch_student_assessment_doc', {trackingId: location.state.tracking_id})
+        setDocs(response.data)
+    }
 
-    // }
+    const info = {
+        trackingId: location.state.tracking_id,
+        score: mark
+    }
+
+    const award_mark = async () => { // Award mark function
+        const response = await PostData('http://localhost:5000/award_mark', info)
+        alert(response.data)
+    }
+
+    useEffect(() => {
+        fetch_student_assessment_doc()
+    },[])
 
 
   return (
     <section>
-        <div className="container">
-            <div className="bg-white p-5">
-                <div className="course-title">
-                    <p>csc 422</p>
-                </div>
+        <div className="container p-sm-0 my-lg-5">
+            <div className="px-lg-5 p-3 py-3 border-bottom bg-white col-md-9 mx-auto d-lg-flex justify-content-between">
                 <div className="student_details text-capitalize">
-                    <div className="name my-4"><span className="font-weight-bold">Name:  </span>{fullName}</div>
-                    <div className="reg_no my-4"><span className="font-weight-bold">Registration number:</span> {regNo}</div>
-                    <div className="dept my-4"><span className="font-weight-bold">Department:</span> {department}</div>
+                    <b className="h6 font-weight-bold">Course: csc 422</b>
+                    <div className="name my-4"><span className="h6">Name:  </span>{fullName}</div>
+                    <div className="dept my-4"><span className="h6">Department:</span> {department}</div>
+                    <div className="reg_no my-4"><span className="h6">Registration number:</span> {regNo}</div>
                 </div>
 
-                <div className="assessment_body my-5" style={AssessmentBody}>
-                    <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Nemo beatae reprehenderit tempora, unde optio delectus praesentium enim voluptate non vitae esse iste magnam dolor maiores maxime impedit corrupti fuga cum! Corporis suscipit dolorem ad ipsum, quo sit nisi repudiandae harum molestiae. Quaerat adipisci quas veniam, optio exercitationem ex nostrum eveniet velit corrupti earum porro quidem praesentium ipsa totam pariatur iure sint nihil ipsam veritatis. Velit excepturi ab tenetur cupiditate temporibus animi laudantium aliquam iste dignissimos in commodi, repudiandae unde voluptatem fugit dolorem provident sequi explicabo dicta culpa fugiat enim. Error vel maiores alias. Corrupti sint doloremque velit tempora mollitia sit animi ut laboriosam? Vero ipsum atque illo cupiditate quam, unde ex ad facere in sed sit! Nobis, doloribus consectetur ab culpa voluptatibus velit, harum dolorem earum neque distinctio tempore sint totam iure praesentium suscipit unde, facere natus. Qui aspernatur quis culpa eos, dolorem nulla ipsum repellat ullam vero laboriosam, tenetur quae mollitia, illum dolores recusandae corporis iste vitae? Beatae dolorem, atque ducimus porro ipsa quibusdam deleniti aperiam ipsam aliquam deserunt dolor repudiandae voluptatem eveniet facilis modi dolores a assumenda autem impedit ex odit rem itaque? Non officiis pariatur vel repellendus delectus id ullam, cum porro error dignissimos earum quae autem quisquam perspiciatis unde culpa sint aperiam sequi odit aliquid, quos assumenda optio. Id molestiae, nobis neque incidunt nam ad repellendus facere tempore pariatur? Quos necessitatibus sed saepe rem laborum dolor, laudantium odit delectus ipsa natus recusandae quidem repudiandae nisi optio amet dolore labore alias. Veniam perspiciatis a vel pariatur distinctio quibusdam, consectetur itaque laborum! Sequi corporis quidem ullam, maiores assumenda blanditiis! Eaque iure suscipit natus dicta nemo vitae numquam harum porro, nisi facilis nihil, facere sit omnis architecto, maiores voluptas laboriosam esse neque perferendis repudiandae temporibus molestiae! Similique, aut odit, sequi in delectus blanditiis dolor reprehenderit iure tempore vero architecto.</p>
+                <div>
+                    <div className="h6 font-weight-bold m-0">Award marks</div>
+                    <div className="d-flex align-items-center">
+                        <div className="col-md-7">
+                            <Options type={'number'} placeholder={'Marks'} value={(e) => setMark(e.target.value)}/>
+                        </div>
+                        <div className="btn btn-dark py-2 ml-2" onClick={award_mark}>Award</div>
+                    </div>
+                </div>
+            </div>
+            <div className="bg-white px-lg-5 p-3 col-md-9 mx-auto">
+                <div className="assessment_body my-lg-3" style={AssessmentBody}>
+                    <p>{docs}</p>
                 </div>
             </div>
         </div>
@@ -46,7 +71,8 @@ const Read_assessment_file = () => {
 const AssessmentBody = {
     textAlign: 'justify',
     fontSize: '17px',
-    lineHeight: '35px'
+    lineHeight: '35px',
+    letterSpacing: '1px'
 }
 
 export default Read_assessment_file
