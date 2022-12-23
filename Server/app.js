@@ -13,6 +13,7 @@ const Buffer = require('buffer')
 const { sign_up_auth, login_auth, lecturer_login, level_auth } = require('./Module');
 const { resolve } = require('path');
 const { ConnectionPoolReadyEvent } = require('mongodb');
+const { json } = require('express');
 const app = express();
 
 // GLOBAL VARIABLES 
@@ -43,8 +44,8 @@ app.use(session({ // Session
     }
 }))
 
-let students_collection, question_collection, written_test_collection,
-lecturers_collection,
+let students_collection, question_collection, 
+written_test_collection, lecturers_collection,
 uri = "mongodb://localhost:27017"; // Database connection uri
 
 const dbConnection = () => { MongoClient.connect(uri, { useUnifiedTopology: true })
@@ -70,15 +71,26 @@ dbConnection()
 let active_lecturer;
 app.post('/lecturer_login', (req, res) => {
     const { error, value } = lecturer_login.validate(req.body)
+
     if (error) {
         res.json(error.message)
 
     }else{
         lecturers_collection.findOne({ username: value.username, password: value.password }).then(result => {
             {result != null ? res.json('true') : res.json('user does not exist')}
-            active_lecturer = req.session.lecturer = result.username
+            active_lecturer = req.session.lecturer = result.uniqueKey
         }).catch(err => {err ? console.log('something went wrong') : null})
     }
+
+
+    // const user = {...value, uniqueKey: UUID.v4()}
+
+    // if (error) {
+    //     console.log(error)
+
+    // }else{
+    //     lecturers_collection.insertOne(user).then(result => console.log(result))
+    // }
 
 })
 
@@ -153,7 +165,6 @@ app.get('/student/login', (req, res) => {
 })
 
 
-
 //************ Set question route ***************************
 app.post('/set_question', (req, res) => {
     question = {...req.body, newId: UUID.v4()};
@@ -168,20 +179,18 @@ app.post('/set_question', (req, res) => {
 // Sending assesment reference to the databse. Which is used in fetching students who participated in the assesments
 app.post('/written_test', (req, res) => { 
     written_test_collection.insertOne(req.body).then(result => {
-        console.log(result)
         
-    }).catch(err => console.log(err))
+    }).catch(err => console.log('cant insert two times'))
     //Removing duplicates in database
-    written_test_collection.createIndex( { date: 1 }, {unique:true} )
+    written_test_collection.createIndex( { uniqueId: 1 }, {unique:true} )
     // written_test_collection.createIndex( { date: 1, level: 1, courseTitle: 1 }, {unique:true} )
 })
-
 
 
 //*** Confirm if student have participated in a particuler assesment before, 
 //to make sure he or she do not write any asseement multiple times ***
 app.post('/confirm_participant', (req, res) => { 
-    const { error, value } = level_auth.validate(req.body.assignmentInfo);
+    const { error, value } = level_auth.validate(req.body.assignmentInfo)
 
     if (error) {
         res.json(error.message)
@@ -194,41 +203,48 @@ app.post('/confirm_participant', (req, res) => {
                 {result.length == 0 ? res.json({error: 'Course not avaliable'}) : res.json(result)}
                 
             }else{ 
-                //Validation for existing students
-                let counter = 0;
+                //If user is requesting for none existing assignment
+                let assementArray = [], unWritten;
                 if (result.length == 0 || result == null || result == []){
                     res.json({error: 'no avaliable assesment'})
         
                 }else{
-                    result.map((assesment, indx) => 
-                        req.body.user_assesment.map(studentsAssesment => {
-                            // Returns the avaliable assesment that the student have not written before. 
-                            //Therefore student still have an assesment to write.
-                            if (studentsAssesment.date != assesment.date && value.level == assesment.level 
-                                && studentsAssesment.question_type != assesment.question_type) { 
+                    const difference = result.filter(obj => !req.body.user_assesment.includes(obj))
 
-                                    console.log(result.length)
-
-                                // if (counter < indx) {
-                                //     counter ++
-                                //     if (counter === indx) {
-                                //         console.log(counter)
-                                //     }
-                                    
-                                // }
-
-                                
-                            }else{
-                                response = {error: 'no avaliable assesment.'}
+                    // -------Return unwritten assesments -------
+                    req.body.user_assesment.map(response => {
+                        // const unWritten = difference.find(obj => obj.uniqueId !== response.uniqueId)
+                        // assementArray.push(difference.find(obj => obj.uniqueId !== response.uniqueId))
+                        difference.find(obj => {
+                            if (obj.uniqueId !== response.uniqueId) {
+                                // assementArray.push(obj)
+                                unWritten = obj
                             }
                         })
-                    )
-                    // res.json(response)
-                    // console.log(response)
+                    })
+
+                    assementArray.push(unWritten)
+                    
+                    if(assementArray) {
+                     res.json(assementArray);
+
+                    }else{
+                        res.json({error: 'no avaliable assesment'})
+                    }
+
+
+
+                    // res.json(assementArray)
+                    // if(assementArray) {
+                    //     assementArray = []
+                    // }else{
+                    //     res.json({error: 'no avaliable assesment'})
+                    // }
                 }
             }
         })
     }
+    
 })
 
 
@@ -252,12 +268,13 @@ app.post('/fetch_selected_question', (req, res) => {
 app.post('/store_student_assesment_file', (req, res) => {
     const generateId = UUID.v4() // Generating a file tracking id
     
+    // Saving student theory assessment in a text file
     FS.writeFile(`./Storage/${generateId}.txt`, `${req.body.studentAnswer}`, (err) => {
         {err ? console.log(err) : console.log('file created successfully')}
     })
     
     //  ***** Attaching the file tracking id to the student's theory assessment history for recognition purposes ******
-    const value = {...req.body, assesment_file_tracking_id: `${generateId}`}
+    const value = {...req.body, studentAnswer: '', assesment_file_tracking_id: `${generateId}`}
     
     students_collection.findOne({ newId: req.body.studentId }).then(result => {
         if (result != null) {
@@ -266,7 +283,9 @@ app.post('/store_student_assesment_file', (req, res) => {
 
             //*** Updating the students assesments array with the current assesment the student wrote ****
             students_collection.updateOne({newId: req.body.studentId}, { $set: {assesments: assesments} }) 
-            .then(response => {response ? res.json('Submission successful') : null})
+            .then(response => {
+                if (response) {res.json('Submission successful')}
+            })
             .catch(err => console.log(err))
         }
     }).catch(err => console.log(err))
@@ -274,27 +293,24 @@ app.post('/store_student_assesment_file', (req, res) => {
 })
 
 
-
-
-
  //********** Store student objective assessment Score **********************
-// app.post('/post_objective_result', (req, res) => {
+app.post('/post_objective_result', (req, res) => {
 
-//     students_collection.findOne({ newId: req.body.studentId }).then(result => {
-//         if (result != null) {
-//             let assesments = result.assesments
-//             assesments.push(req.body)
+    students_collection.findOne({ newId: req.body.studentId }).then(result => {
+        if (result != null) {
+            let assesments = result.assesments
+            assesments.push(req.body)
 
-//             //************ Updating the students assesments array with the current assesment **********
-//             students_collection.updateOne({newId: req.body.studentId}, { $set: {assesments: assesments} }) 
-//             .then(response => {response ? res.json('true') : null})
-//             .catch(err => console.log(err))
-//         }
-//     })
-// })
+            //************ Updating the students assesments array with the current assesment **********
+            students_collection.updateOne({newId: req.body.studentId}, { $set: {assesments: assesments} }) 
+            .then(response => {response ? res.json('true') : null})
+            .catch(err => console.log(err))
+        }
+    })
+})
 
 
-// ******************** Awarding score to students by the lecturer **********************
+// ********** Awarding score to students by the lecturer ********************
 app.post('/award_mark', (req, res) => {
     const { trackingId, score } = req.body
    
@@ -305,52 +321,7 @@ app.post('/award_mark', (req, res) => {
 })
 
 
-
-
-
-
-// const plan_text ='text/plain'; //File formats to accept
-
-// app.post('/post_theory_result', (req, res) => {
-//     //********** Generating a tracking id for file, to relate it to the owner *************
-//     const generateId = UUID.v4() 
-
-//     //********************* File upload module **********************
-//     const Storage = MULTER.diskStorage({
-//         destination: path.join(__dirname, './Storage'),
-//         filename: (req, file, callback) => {
-
-//             if (file.mimetype == plan_text) {
-//                 callback(null, generateId + "_" + file.originalname)
-
-//             }else{
-//                 return res.json('cannot accept file')
-//             }
-//         }
-//     })
-//     const file_upload = MULTER({storage: Storage}).single("file")
-
-
-//     file_upload(req, res, (err) => {
-//         //********* Attaching the file tracking id to the student's theory assessment history for recognition purposes ***********
-//         const value = {...req.body, assesment_file_tracking_id: `${generateId}_${req.file.originalname}`}
-
-//         students_collection.findOne({ newId: req.body.studentId }).then(result => {
-//             if (result != null) {
-//                 let assesments = result.assesments
-//                 assesments.push(value)
-
-//                 //*** Updating the students assesments array with the current assesment the student wrote ****
-//                 students_collection.updateOne({newId: req.body.studentId}, { $set: {assesments: assesments} }) 
-//                 .then(response => {response ? res.json('Submission successful') : null})
-//                 .catch(err => console.log(err))
-//             }
-//         }).catch(err => console.log(err))
-//     })
-// })
-
-
-//******************************* Fetch assignments *******************************
+//***** Fetch assignments to display in the admin dashboard *******
 app.get('/fetch/assessments', (req, res) => {
     written_test_collection.find().toArray().then(result => {
         if (result != null) {
@@ -363,10 +334,12 @@ app.get('/fetch/assessments', (req, res) => {
 
 //*************** Fetch student who participated in the assignment ******************
 app.post('/fetch_participated_students', (req, res) => { 
-    const { courseTitle, level, date } = req.body
+    const { uniqueId } = req.body
 
-    students_collection.find({assesments: {$elemMatch: {course: courseTitle, level: level, date: date}}}).toArray()
-    .then(result => {
+    students_collection.find({assesments: {$elemMatch: 
+        {uniqueId: uniqueId}
+
+    }}).toArray().then(result => {
         if(result != null) {
             res.json(result)
         }
@@ -377,13 +350,15 @@ app.post('/fetch_participated_students', (req, res) => {
         }
     })
 
+    // students_collection.find({assesments: {$elemMatch: 
+        // {course: courseTitle, level: level, date: date}
 })
 
 
 //**************** Read student theory assessment file *******************
 app.post('/fetch_student_assessment_doc', (req, res) => {
 
-    FS.readFile(`./Storage/${req.body.trackingId}`, 'utf-8', (err, data) => {
+    FS.readFile(`./Storage/${req.body.trackingId}.txt`, 'utf-8', (err, data) => {
         if (err) {
           return console.log('an err occured');
 
@@ -392,6 +367,109 @@ app.post('/fetch_student_assessment_doc', (req, res) => {
         }
     });
    
+})
+
+
+//******************** Admin read question Route ********************
+app.post('/admin_read_questions', (req, res) => {
+
+    question_collection.find({ uniqueId: req.body.id}).toArray()
+    .then(result => res.json(result))
+    .catch(err => console.log(err))
+
+})
+
+
+
+//****************** Edit theory questions route ******************
+app.post('/edit_theory_question', (req, res) => {
+    const { dept, title, Level, quest } = req.body.edited_question
+    question_collection.updateOne(
+        {newId: req.body.questionId},
+
+        {
+           $set: {
+                department: dept,
+                courseTitle: title,
+                level: Level,
+                question: quest
+            } 
+        }
+    )
+    .then(response => {
+        if (response.modifiedCount > 0) {
+            res.json({true: 'Question edited successfully'})
+        }
+    })
+    .catch(err => {
+        if(err) {
+            res.json({false: 'cannot edit question. please try again!'})
+        }
+    })
+})
+
+
+
+//****************** Edit objective questions route ******************
+app.post('/edit_objective_question', (req, res) => {
+    const { dept, title, Level, quest, optA, optb, optc, correct } = req.body.edited_question
+
+    question_collection.updateOne(
+        {newId: req.body.questionId},
+
+        {
+           $set: {
+                department: dept,
+                courseTitle: title,
+                level: Level,
+                question: quest,
+
+                a: optA, b: optb, c: optc,
+                ans: correct
+            } 
+        }
+    )
+    .then(response => {
+        if (response.modifiedCount > 0) {
+            res.json({true: 'Question edited successfully'})
+        }
+    })
+    .catch(err => {
+        if(err) {
+            res.json({false: 'cannot edit question. please try again!'})
+        }
+    })
+})
+
+
+
+//****************** Delete questions route ******************
+app.post('/delete_question', (req, res) => {
+
+    //-------- Deleting questions --------
+    question_collection.deleteMany(
+        { uniqueId: req.body.id }
+    )
+    .then(result => {
+        if(result.deletedCount > 0) {
+            res.json('Question deleted successfully')
+        }
+    })
+
+    .catch(err => console.log(err))
+
+
+    //--------- Delete assessment refference ---------
+    written_test_collection.deleteOne(
+        { uniqueId: req.body.id }
+    )
+    .then(result => {
+        if(result.deletedCount > 0) {
+            console.log('refference deleted successfully')
+        }
+    })
+    .catch(err => console.log(err))
+
 })
 
 

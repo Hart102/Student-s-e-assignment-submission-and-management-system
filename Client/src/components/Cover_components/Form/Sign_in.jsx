@@ -17,10 +17,7 @@ const Sign_in = () => {
     [reg_no, setRegNo] = useState(''),
     [server_msg, setServerMsg] = useState(''),
 
-    userInfo = {
-        firstname,
-        reg_no
-    };
+    userInfo = {firstname, reg_no};
 
     const handle_login = async () => { //LOGIN FUNCTION
        const response = await PostData('http://localhost:5000/student/login', userInfo)
@@ -32,10 +29,11 @@ const Sign_in = () => {
             dispatch(switch_forms('LEVEL'))
         }
     }
-
+    
     const check_session = async () => { // Verify session
-       const response = await Axios.get('http://localhost:5000/student/login')
-       dispatch(login_action(response.data))
+        const response = await Axios.get('http://localhost:5000/student/login')
+        dispatch(login_action(response.data))
+        // dispatch(switch_forms('LEVEL'))
     }
 
     useEffect(() => {
@@ -45,22 +43,26 @@ const Sign_in = () => {
 
 
   return (
-    <form className={switch_form != 'login' ? 'scale_out' : "sign_in scale_in form-group px-5 py-5 my-5"}>
-        <div className="display-6 font-weight-bold text-center my-5"><span className="text-warning">Log</span>in</div>
-        <div className="mx-lg-5">
-            <InputField type={'text'} placeholder={'Firstname'} onchange={(e) => {
-                setServerMsg('')
-                setFirstname(e.target.value)
-            }}/>
+    <form className={switch_form !== 'login' ? 'scale_out d-none' : "sign_in scale_in form-group"}>
+        <div className="display-6 font-weight-bold text-center">
+            <span className="text-warning h6" style={{fontWeight: '700'}}>LOGIN</span>
         </div>
-        <div className="my-4 px-lg-5">
-            <InputField type={'text'} placeholder={'MOUAU/20/ADM/1059'} onchange={(e) => {
+        <InputField type={'text'} 
+            placeholder={'Firstname'} 
+            onchange={(e) => {
                 setServerMsg('')
-                setRegNo(e.target.value)
-            }}/>
+                setFirstname(e.target.value)}}
+        />
+        <div className="my-4">
+            <InputField type={'text'} 
+                placeholder={'MOUAU/20/ADM/1059'} 
+                onchange={(e) => {
+                    setServerMsg('')
+                    setRegNo(e.target.value)}}
+            />
         </div>
 
-        <div className="px-lg-4">
+        <div>
             <Form_btn btnText={'Login'} onclick={(e) => {
                 e.preventDefault()
                 handle_login()

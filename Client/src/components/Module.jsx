@@ -1,21 +1,31 @@
 // Clear input function 
 export const clearInput = (element) => document.getElementById(element).value = ''
+// Element Selector
+export const elementSelector = element => document.querySelector(element)
 
 
-// Date function 
-export const date_function = () => {
-    let today = new Date();
-    let quarter = Math.floor((today.getMonth() + 3) / 3)
-    let nextq;
-
-    if (quarter == 4) {
-        nextq = new Date(today.getFullYear() + 1, 1, 1);
-
-    }else{
-        nextq = new Date(today.getFullYear(), quarter * 3, 1);
+//****************** Question answer template ******************
+export class QuestionTemplate {
+    constructor(studentId, courseTitle, level, department, date, score, question_type, uniqueId, studentAnswer) {
+        Object.assign(this, {
+        studentId: studentId,
+        courseTitle: courseTitle,
+        level: level,
+        department: department,
+        date: date,
+        score: score,
+        question_type: question_type,
+        uniqueId: uniqueId,
+        studentAnswer: studentAnswer
+        })
     }
+}
 
-    return (
-        nextq.toLocaleString('en-us', { weekday: 'long' }) + ', ' + nextq.toLocaleString('default', { month: 'long' }) + ' ' + ('0' + nextq.getDate()).slice(-2) + ', ' + nextq.getFullYear()
-    )
+//************************* Date function *************************
+export const date_function = () => {
+    let today = new Date(), year = today.getFullYear()
+    // Date Formatting 
+    let options = {day: "numeric", month: "short"};
+    // The method to string returns a date as string value 
+    return `${today.toLocaleDateString("en-US", options)} ${year}`
 }

@@ -1,65 +1,130 @@
 import Axios from 'axios'
 import { useState, useEffect } from 'react'
-import { total_assesments } from '../Actions';
-import { useDispatch } from 'react-redux';
+
+import { 
+    total_assesments, 
+    warningMsg, 
+    warningMsgResponse, 
+    successMsg 
+} from '../Actions';
+
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import PostData from '../components/PostData'
 
 
 
 const Question_display_box = () => {
     const dispatch = useDispatch(),
     navigation = useNavigate();
+    const adminId = useSelector(state => state.Capure_lecturer_session);
+    const WARNING_MSG_RESPONSE = useSelector(state => state.CaptureWarningMsgResponse);
+
+    const [question, setSetQuestion] = useState('')
+    const [questionId, setSetQuestionId] = useState('')
 
 
-    const [question, setSetQuestion] = useState(''),
-    fetch_assessments = async() => { // Fetch Assignments
+    //--------------- Fetch Assignments ---------------
+    const fetch_assessments = async() => {
         const response = await Axios.get('http://localhost:5000/fetch/assessments')
         setSetQuestion(response.data)
         dispatch(total_assesments(response.data.length))
     };
+    if (WARNING_MSG_RESPONSE == 'Yes' || WARNING_MSG_RESPONSE == 'refresh') {
+        fetch_assessments()
+        setTimeout(() => {
+            dispatch(warningMsgResponse(''))
+        }, 8000)
+    }
 
 
-    const captured_clicked_question = async (id) => { 
+    //----------------- Submission Function-----------------
+    // Capturing the right assesment that was clicked to get the students that participated in it.
+    const captured_clicked_question = (id) => { 
         let exact_question;
-        question.map(quest => quest._id == id ? exact_question = quest : null)// Capturing the right assesment that was clicked to get the students that participated in it.
+        question.map(quest => quest._id === id ? exact_question = quest : null)
         navigation('/admin/results', {state: exact_question})
     };
-    
 
+    //----------------- Read question function -----------------
+    const read_question = async (question_id) => {
+        const response = await PostData(
+            'http://localhost:5000/admin_read_questions', {id: question_id}
+        )
+        navigation('/admin/readquestions', {state: response.data})
+    }
+    
+    //--------------- display warning msg ---------------
+    const display_warning_msg = () => {
+        dispatch(warningMsg('Are you sure you want to delete this question ?'))
+    }
+    
+    //--------------- Delete question function ---------------
+    const delete_question = async () => {
+        if (WARNING_MSG_RESPONSE == 'Yes') {
+            const response = await PostData(
+                'http://localhost:5000/delete_question', {id: questionId}
+            )
+            setSetQuestionId('')
+            dispatch(warningMsgResponse('')) //Warning msg
+            dispatch(successMsg(response.data)) //Success msg
+        }
+    }
+    delete_question()
+
+    
     useEffect(() => {
         fetch_assessments()
     }, [])
 
 
+    
 
   return (
-      <div className="question_display_box mb-5">
+    <div className="mb-5 mt-2">
 
-        <section className="display_box bg-white d-flex flex-wrap">
-            <div className="h5 my-4 font-weight-bold ml-5">Assignments</div>
-            <section className='col-md-11 mx-auto'>
-                <div className="box d-flex justify-content-between py-3 px-3 border-bottom">
-                    <b>Course</b>
-                    <b>Department</b>
-                    <b>Level</b>
-                    <b>Date</b>
-                    <b>Participants</b>
-                </div>
-                {question != '' && question.map(quest => 
-                    <div className="box d-flex justify-content-between py-3 px-3 text-capitalize" key={quest._id}>
-                        <p>{quest.courseTitle}</p>
-                        <p>{quest.department}</p>
-                        <p>{quest.level}</p>
-                        <p>{quest.date}</p>
+        <section className="display_box bg-white d-flex flex-column">
+            <div className="h5 my-4 font-weight-bold mx-5">Assignments</div>
 
-                        <p>
-                            <p className='btn btn-success px-lg-5' onClick={() => captured_clicked_question(quest._id)}>
-                                View
-                            </p>
-                        </p>
-                    </div>
-                )}      
-            </section>
+
+            <table className="col-md-11 mx-auto bg-white">
+                <thead className='border-bottom'>
+                    <tr>
+                        <th className='p-3'>Course</th>
+                        <th className='p-3'>Department</th>
+                        <th className='p-3'>Level</th>
+                        <th className='p-3'>Date</th>
+                        <th className='p-3'>Action</th>
+                    </tr>
+                </thead>
+
+                {question !== '' && question.map(quest => 
+                quest.adminId === adminId && //Preventing admin from seeing another admins post
+
+                    <tbody>
+                        <tr  key={quest._id}>
+                            <td className='p-3'>{quest.courseTitle}</td>
+                            <td className='p-3'>{quest.department}</td>
+                            <td className='p-3'>{quest.level}</td>
+                            <td className='p-3'>{quest.date}</td>
+                            <td className='pointer' 
+                                onClick={() => captured_clicked_question(quest._id)}>
+                                    <div className="btn shadow-sm action">submissions</div>
+                            </td>
+                            <td className='pointer'
+                                onClick={() => read_question(quest.uniqueId)}>
+                                    <div className="btn shadow-sm action">Read</div>
+                            </td>
+                            <td className='pointer' 
+                                onClick={() => {
+                                    display_warning_msg()
+                                    setSetQuestionId(quest.uniqueId)}}>
+                                    <div className="btn shadow-sm action">Delete</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                )}
+            </table>
         </section>
     </div>
   )

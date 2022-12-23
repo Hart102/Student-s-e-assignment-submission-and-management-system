@@ -17,6 +17,15 @@ import Obj_results from "./pages/Obj_results";
 import Read_assessment_file from "./pages/Assignment/Read_assessment_file";
 import Lecturer_login from "./pages/Admin/Lecturer_login";
 
+// Components 
+import SetTheory_quest from "./components/SetTheory_quest";
+import SetObjQuestion from "./components/SetObjQuestion";
+import ReadQuestions from "./pages/Admin/ReadQuestions";
+
+import Sign_in from "./components/Cover_components/Form/Sign_in";
+import Sign_up from "./components/Cover_components/Form/Sign_up";
+import Level from "./components/Cover_components/Form/Level";
+
 const App = () => {
   return (
     <BrowserRouter>
@@ -24,10 +33,16 @@ const App = () => {
         <Route path="/" element={<Cover />} />
         <Route path="/assignment/menu" element={<Assignment_menu />} />
         <Route path="/assignment" element={<Assignment_page />} />
-        <Route path="/admin" element={<Admin />} />
+
+        <Route path="/admin" element={<Admin />} >
+          <Route path="/admin/setTheory" element={<SetTheory_quest />} />
+          <Route path="/admin/obj" element={<SetObjQuestion />} />
+        </Route>
+        
         <Route path="/admin/results" element={<Obj_results />} />
         <Route path="/admin/read_assessment" element={<Read_assessment_file />} />
         <Route path="/lecturer_login" element={<Lecturer_login />} />
+        <Route path="/admin/readquestions" element={<ReadQuestions />} />
       </Routes>
     </BrowserRouter>
   )

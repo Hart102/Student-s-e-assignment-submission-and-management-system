@@ -25,10 +25,26 @@ export const lecturer_session = (action) => {
 
 
 
-// ADMIN MENU ACTION
-export const admin_menu = (action) => {
+// WARNING MSG
+export const warningMsg = (action) => {
     return{
-        type: "SWITCH_MENU",
+        type: "DISPLAY_WARNING_MSG",
+        payload: action
+    }
+}
+
+// WARNING MSG RESPONSE
+export const warningMsgResponse = (action) => {
+    return{
+        type: "WARNING_MSG_RESPONSE",
+        payload: action
+    }
+}
+
+// SUCCESS MSG
+export const successMsg = (action) => {
+    return{
+        type: "SUCCESS_MESSAGE",
         payload: action
     }
 }

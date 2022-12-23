@@ -1,35 +1,46 @@
 import '../Admin/Admin.css'
+import Axios from 'axios'
+import { useEffect } from 'react'
+
+import AdminNavbar from './AdminNavbar'
+
 import { useSelector, useDispatch } from 'react-redux'
-import { admin_menu } from '../../Actions'
+import { useNavigate, Outlet } from 'react-router-dom'
+import { warningMsg, warningMsgResponse } from '../../Actions'
 
 import Sidemenu from '../../components/Sidemenu'
 import Overviewbox from '../../components/Overviewbox'
-import SetQuestion from '../../components/SetQuestion'
-
 import Question_display_box from '../../components/Question_display_box'
-import SetTheory_quest from '../../components/SetTheory_quest'
 
-import Axios from 'axios'
-import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import Warning from '../../components/Model/Warning'
+import SuccessMsg from '../../components/Model/SuccessMsg'
 
 const Admin = () => {
     const dispatch = useDispatch(),
     navigation = useNavigate(),
 
-    switch_menu = useSelector(state => state.Switch_admin_menu),
+    WARNING_MSG = useSelector(state => state.CaptureWarningMsg),
+    SUCCESS_MSG = useSelector(state => state.CaptureSuccessMsg),
+    WARNING_MSG_RESPONSE = useSelector(state => state.CaptureWarningMsgResponse),
     total_assesments = useSelector(state => state.Capture_total_assesments),
     check_session = useSelector(state => state.Capure_lecturer_session);
 
 
-    const lecturer_logout = () => { // Logout function
-        window.location.reload()
-        const response = Axios.get('http://localhost:5000/lecturer_logout')
-        console.log(response)
+    const displayWarningMsg = () => {
+        dispatch(warningMsg('Are you sure you want to logout'))
     }
-    
 
-    useEffect(() => { // Verify lecturer session
+    //---------------- Logout function ----------------
+    const lecturer_logout = () => { 
+        window.location.reload()
+        Axios.get('http://localhost:5000/lecturer_logout')
+    }
+    if (WARNING_MSG_RESPONSE === 'Yes') {
+        lecturer_logout(); dispatch(warningMsgResponse(''))
+    }
+
+    //------------ Verify lecturer session ------------
+    useEffect(() => { 
         if (!check_session) {navigation('/lecturer_login')}
     },[])
 
@@ -39,64 +50,44 @@ const Admin = () => {
     <>
     {/* #15242b */}
 
-    <div className="admin">
-        <nav className='header_container'>
-            <div>
-                <div className="logo px-5 d-flex justify-content-between align-items-baseline font-weight-bold text-white">
-                    <div className='display-6'>
-                        <span className="text-warning">e-</span>campus
-                    </div>
-                    <p className='btn text-white border pointer' onClick={lecturer_logout}>Logout</p>
-                </div>
-            </div>
-            <menu>
-                <ul className="list-unstyled d-flex text-dark text-capitalize">
-                    <Sidemenu text={'overview'} onclick={(e) => {
-                        dispatch(admin_menu(e.target.textContent))
-                    }}/>
-                    {/* <Sidemenu text={'create Obj'} onclick={(e) => {
-                        dispatch(admin_menu(e.target.textContent))
-                    }}/> */}
-                    <Sidemenu text={'create theory'} onclick={(e) => {
-                        dispatch(admin_menu(e.target.textContent))
-                    }}/>
-                    <Sidemenu text={'course'}/>
-                    <Sidemenu text={'notice'}/>
-                    <Sidemenu text={'department'}/>
-                </ul>
-            </menu>
-        </nav>
-    </div>
+    <AdminNavbar onclick={() => {displayWarningMsg()}}/>
 
     <section className='d-flex justify-content-between'>
         
         <div className="main-container py-5">
             <div className="container pt-5 mb-5">
-                <section className="box-container text-capitalize shadow-sm">
-                    <Overviewbox text={'total assessments'} overview={total_assesments}/>
-                    <Overviewbox text={'total professors'} overview={150}/>
-                    <Overviewbox text={'total courses'} overview={150}/>
-                    <Overviewbox text={'total departments'} overview={150}/>
+                <section className="box-container text-capitalize">
+                    <Overviewbox 
+                        text={'total assignments'} 
+                        overview={total_assesments}
+                    />
+                    <Overviewbox 
+                        text={'total professors'} 
+                        overview={150}
+                    />
+                    <Overviewbox 
+                        text={'total courses'} 
+                        overview={150}
+                    />
+                    <Overviewbox 
+                        text={'total departments'} 
+                        overview={150}
+                    />
                 </section>
 
-
-
-                {/* SET QUSETIONS  */}
-                <div className={switch_menu == 'overview'  ? 'scale_in d-block' : 'scale_out d-none'}>
+                <div className="col-md-12">
                     <Question_display_box />
                 </div>
 
 
-                {/* Set question */}
-                <div className={switch_menu == 'create Obj' ? 'scale_in d-block' : 'scale_out d-none'}>
-                    <SetQuestion/>
-                </div>
+                {/******* Warning and successful msg  *******/}
+                <Warning msg={WARNING_MSG}/>
+                < SuccessMsg msg={SUCCESS_MSG}/>
 
-                <div className={switch_menu == 'create theory' ? 'scale_in d-block' : 'scale_out d-none'}>
-                    <SetTheory_quest />
-                </div>
             </div>
         </div>
+
+        <Outlet />
     </section>
 
 

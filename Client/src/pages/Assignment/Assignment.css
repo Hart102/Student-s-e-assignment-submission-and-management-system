@@ -3,16 +3,44 @@ body{
     background: #f4f8f9;
 }
 
-/* ////////////////ASSIGNMENT PAGE STYLING//////////////// */
-.Assignment_page header {
-    background: #453759;
+.menu-list{ 
+    position: absolute;
+    left: -100em;
+    top: -3.1em;
+    height: 100vh;
+    transition: 0.3s;
+    /* color: #e0e0e0; */
+    color: rgb(17, 73, 17);
+    /* background: rgba(26, 156, 134, 0.1) !important; */
+}
+
+.show{
+    left: 0em;
+}
+
+
+.question-container > section {
+    width: 100%;
 }
 
 
 
 
+
+
+
+
+
+/* ////////////////ASSIGNMENT PAGE STYLING//////////////// */
+/* .Assignment_page header {
+    background: #453759;
+} */
+
+
+
+
 /* ////////////////ASSIGNMENT MENU STYLING//////////////// */
-.menu{
+/* .menu{
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, auto));
     gap: 10px;
@@ -26,4 +54,4 @@ body{
 .menu .box:nth-child(odd){
     color: #000 !important;
    box-shadow: 0px 0px 30px 10px #e0e0e0;
-}
+} */

@@ -1,4 +1,3 @@
-
 const Sidemenu = ({ icon, text, onclick }) => {
   return (
         

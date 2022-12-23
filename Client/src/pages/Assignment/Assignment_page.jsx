@@ -1,25 +1,42 @@
 import '../Assignment/Assignment.css'
-import QuestionComp from '../../components/AssignmentComp/QuestionComp'
-import TheoryComp from '../../components/AssignmentComp/TheoryComp'
-
-import { useLocation, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { useSelector } from "react-redux"
-import PostData from '../../components/PostData'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { useSelector, useDispatch } from "react-redux"
 
-// import date_function from '../../components/Module/date_function'
+import { warningMsg, 
+  warningMsgResponse, 
+  switch_forms, successMsg 
+} from '../../Actions'
+
+import PostData from '../../components/PostData'
+import Warning from '../../components/Model/Warning'
+import SuccessMsg from '../../components/Model/SuccessMsg'
+
+import ObjComp from '../../components/AssignmentComp/ObjComp'
+import TheoryComp from '../../components/AssignmentComp/TheoryComp'
+import { QuestionTemplate } from '../../components/Module'
+import { elementSelector } from '../../components/Module'
+
+
 
 
 
 const Assignment_page = () => {
+
   const location = useLocation(),
-  navigation = useNavigate();
-
-
-
+  navigation = useNavigate(),
+  dispatch = useDispatch()
+  const WARNING_MSG = useSelector(state => state.CaptureWarningMsg)
+  const SUCCESS_MSG = useSelector(state => state.CaptureSuccessMsg)
+  const WARNING_MSG_RESPONSE = useSelector(state => state.CaptureWarningMsgResponse);
+  
+  // const [serverResponse, setServerResponse] = useState('')
   const [theory_questions, setTheory_questions] = useState('')
   const [objective_questions, setObjective_questions] = useState('')
   const [switch_questions, setSwitch_questions] = useState('')
+
+  
+  
 
 //************* Choose assesment functionality *********************
   const select_assesment = (id) => {
@@ -45,178 +62,306 @@ const Assignment_page = () => {
 
 
   //*********** Theory question properties ******************  
-  const [file, setFile] = useState('');
+  const [studentAnswer, setStudentAnswer] = useState('');
   const student = useSelector(state => state.logged_in_user);
   const [studentId, setStudentId] = useState(student.newId);
 
-  const post_file = async () => {// Sending result to the server
-    
-    const data = new FormData();
-    data.append('studentId', studentId)
-    data.append('course', theory_questions[0].courseTitle)
-    data.append('level', theory_questions[0].level)
-    data.append('dept', theory_questions[0].department)
-    data.append('date', theory_questions[0].date)
-    data.append('file', file)
-    data.append('score', '')
-    data.append('question_type', 'theory')
-
-    const response = await PostData('http://localhost:5000/post_theory_result', data) 
-    alert(response.data)
+  //-------------- Display warning msg --------------
+  const display_warning_msg  = () => {    
+    dispatch(warningMsg('Are you sure you want to submit ?'))
   }
 
 
 
+  // --------------- Objective question properties --------------- 
+  var answers_container = [];
+  const removeDuplicates = (arr) => [...new Set(arr)] // Remove duoble answers
+   
+  // Capture clicked questions and the student answer 
+  const capture_answered_question = (questionId, studentAns) => {
+    let ans_container = document.querySelector('.ans_container')
+    
+    objective_questions.map(question => {
+      if (question.newId === questionId) {
+        if (question.ans === studentAns) {
+          let p = document.createElement('p')
+          p.setAttribute('class', 'student-answers')
+          p.innerHTML = studentAns
+          
+          ans_container.append(p)
+        }
+      }
+    })
+  }
 
-//**************** Cancel function ***************
-  const cancel = (e) => {
-    if (e.target.textContent == 'Cancel') {
-      alert('Click ok to cancel')
-      navigation('/')
 
-      e = ''
+  let arr = []
+  if (theory_questions) {
+    //------------ Submite theory assessment ------------
+    let len = 1
+    window.addEventListener('keyup', (e) => {
+      if ((e.keyCode) == 13) {
+        // len ++
+        // arr.push(document.querySelector('#theory').value)
+        let result = document.querySelector('#theory').value.replace(/\n/g, `${'\n' + "" + len + " "}`)
+        // document.querySelector('#theory').value = result
+
+        console.log(result)
+      }
+    })
+
+    // window.onkeyup
+
+
+
+
+
+    const submit_theory = async () => {
+      
+      // arr.push(document.querySelector('#theory').value)
+      // let result = document.querySelector('#theory').value.replace(/\n/g, `${'\n' + "" + 2 + " "}`)
+      // document.querySelector('#theory').value = result
+
+      
+
+
+
+      
+     var data = new QuestionTemplate (
+      studentId,
+      theory_questions[0].courseTitle,
+      theory_questions[0].level,
+      theory_questions[0].department,
+      theory_questions[0].date,
+      '',
+      'theory',
+      theory_questions[0].uniqueId,
+      studentAnswer
+     )
+     
+    //  const response = await PostData(
+    //   'http://localhost:5000/store_student_assesment_file', data
+    // ) 
+    //  if(response.data) {
+    //   dispatch(successMsg(response.data))
+    //  }
+   }
+ 
+   if (WARNING_MSG_RESPONSE === 'Yes') {
+    submit_theory()
+    // Preventing double submission
+    dispatch(warningMsgResponse(''))
+   } 
+
+
+  }else{
+    // calculate student Score 
+    let FinalScore;
+    const calculateStudentScore = () => {
+      document.querySelectorAll('.student-answers').forEach(ans => {
+        answers_container.push(ans.textContent)
+        return FinalScore = removeDuplicates(answers_container).length
+      })
+    }
+    
+    
+    // --------------- Objective question properties --------------- 
+    const student_result = async () => {// Calculating result
+      calculateStudentScore()
+
+      var result = new QuestionTemplate (
+        studentId,
+        objective_questions[0].courseTitle,
+        objective_questions[0].level,
+        objective_questions[0].department,
+        objective_questions[0].date,
+        FinalScore,
+        'objective',
+        objective_questions[0].uniqueId,
+      )
+      
+      // Sending result to the server
+      const response = await PostData('http://localhost:5000/post_objective_result', result) 
+      if (response.data == 'true') {
+        dispatch(successMsg('Submission successful'))
+      }
+    }
+    if (WARNING_MSG_RESPONSE == 'Yes') {
+      student_result()
+      // Preventing double submission
+      dispatch(warningMsgResponse(''))
+    }
+  }
+  
+  
+
+
+  //--------------Hamburger Menu function --------------
+  let clicked = 'false'
+  const elementSelector = (element) => document.querySelector(element)
+  const hamburgerMenuFunction = () => {
+    if (clicked == 'false'){
+      elementSelector('.menu-list').classList.add('show')
+      elementSelector('.fa').setAttribute('class', 'fa fa-times fa-2x pointer')
+      clicked = 'true'
+      
+    }else{
+      elementSelector('.menu-list').classList.remove('show')
+      elementSelector('.fa').setAttribute('class', 'fa fa-bars fa-2x pointer')
+      clicked = 'false'
     }
   }
 
-  //************* Verify student session **********
+
+  // ------------ Verify student session ------------
   useEffect(() => {
     if (location.state == null) {
       navigation('/')
     }
+
+
+    // If submission is successful redirect user to login 
+    document.addEventListener('click', (e) => {
+      if (e.target.textContent == 'OK') {
+        dispatch(warningMsg(''))
+        dispatch(switch_forms('login'))
+        navigation('/')
+      }
+    })
   },[])
 
   return (
-    <div className='Assignment_page'>
-      <header className='fixed-top py-2'>
-        <div className="d-flex px-2">
-          <div className="logo display-6 text-white font-weight-bold">
-            <span className="text-warning">e-</span>campus
+    <>
+      <header className='fixed-top'>
+        <div className="container col-md-8 d-flex justify-content-between aling-items-center py-4 px-2 mx-auto bg-white shadow-sm">
+          <i className="fa fa-bars fa-2x pointer" onClick={hamburgerMenuFunction}></i>
+
+          <div className="logo h4 font-weight-bold">
+            <span className="text-warning">E-</span>campus
           </div>
         </div>
+
+        <menu>
+          <ul 
+            className='menu-list list-unstyled col-md-2 text-capitaliz py-5 px-3 my-5 bg-white border-right'>
+            <b>Assessment:</b>
+            {location.state ? location.state.map((questions, indx) => 
+            // ********* Assessment List ******************
+              <div className="my-5 pointer text-capitalize" key={indx} onClick={() => {
+                select_assesment(questions._id )
+                hamburgerMenuFunction()
+              }}>
+                <span className="d-flex">
+                  <b className='mx-30'>{questions.courseTitle}</b>
+                </span>
+                <li>{questions.question_type}</li> 
+              </div>
+            ) : null}
+          </ul>
+        </menu>
       </header>
 
 
-    <div className="col-md-12 d-flex px-4">
-      <ul className='list-unstyled text-capitaliz py-5 my-5 col-md-2 border-right'>
-        <h5>Avaliable assessments: </h5>
-        {location.state ? location.state.map((questions, indx) => 
-          console.log(questions)
-
-          //********* Assessment List ******************
-          // <div className="my-3 pointer text-capitalize" key={indx} onClick={() => select_assesment(questions._id )}>
-          //   <span className="d-flex">
-          //     <li>{indx + 1}</li>
-          //     <li className='ml-3'>{questions.courseTitle}</li>
-          //   </span>
-          //   <li className='ml-3'>{questions.date}</li> 
-          // </div>
-        ) : null}
-      </ul>
 
 
+     
+      <div className="question-container col-md-8 d-flex p-lg-5 px-3 mx-auto bg-white shadow-sm" style={{minHeight: '100vh'}}>
+        {/*************** Theory questions section ****************/}
+        <section 
+        className={theory_questions !== '' 
+        && theory_questions[0].question_type == 'thoery' 
+        && switch_questions == 'thoery' ? "my-5 py-5 mx-auto" : 'd-none'}>
 
-        <div className="d-flex">
+          {theory_questions !== '' 
+          && theory_questions[0].question_type == 'thoery' 
+          && theory_questions.map((quest, index) => 
 
-          {/*************** Theory questions section ****************/}
-          <div className={theory_questions !== '' && theory_questions[0].question_type == 'thoery' && switch_questions == 'thoery' ? "mt-5 py-5 pl-5 col-md-9" : 'd-none'}>
-            <div className="pr-lg-5 col-md-8">
-              <div className="h4 font-weight-bold">Questions: </div>
-              <span>
-                <p className="course text-uppercase ml-1">{theory_questions !== '' ? theory_questions[0].courseTitle : null}</p>
-              </span>
-              {theory_questions !== '' && theory_questions[0].question_type == 'thoery' && theory_questions.map((quest, index) => 
-                <div className='d-flex my-5' key={index}>
-                  <div className="question_number">{index + 1}</div>
-                  <p className="text-capitalize ml-3">{quest.question}</p>
-                </div>
-              )}
+            <div key={index}>
+              <TheoryComp 
+                courseTitle={
+                  theory_questions !== '' ? 
+                  theory_questions[0].courseTitle : null
+                }
+                index={index} 
+                question={quest.question}
+              />
             </div>
+          )}
 
-            <form className='form-group' encType="multipart/form-data">
-              <div>
-                <p>Only <span className="text-danger">.txt</span> files accepted</p>
-                <input type="file" onChange={(e) => {
-                    const file = e.target.files[0]; setFile(file)
-                }}/>
-              </div>
-              <button className='btn btn-dark py-2 px-5 mt-3 text-white shadow-sm' onClick={(e) => {
-                post_file()
+          <form className='form-group my-5'>
+            <textarea
+              className='border p-3' 
+              placeholder='Write your answers here.
+
+              Eg: 1 computer is defined as ......'
+              onChange={(e) => setStudentAnswer(e.target.value)}
+              id='theory'>
+            </textarea>
+
+            <button 
+              className='btn py-2 px-5 mt-5 btn-white shadow-sm border' 
+              onClick={(e) => {
                 e.preventDefault()
-              }}>Submit</button>
-            </form>
+                display_warning_msg()
+            }}>Submit</button>
+          </form>
+        </section>
+      
+
+
+        {/***************************** Obejective question section **************************** */}
+        <section 
+        
+        className={objective_questions !== '' 
+        && objective_questions[0].question_type == 'objective' 
+        && switch_questions == 'objective' ? 'col-md-12 mt-5 py-5 mx-auto' : 'd-none'}>
+
+          {objective_questions != '' && objective_questions.map((qust, index) => 
+            <div key={index}>
+              {/*-------- Storing student answer here --------*/}
+              <div className='ans_container d-none'></div>
+
+              <ObjComp 
+                name={index}
+                index={index}
+                question={qust.question}
+                
+                onclickA={(e) => {
+                  capture_answered_question(qust.newId, e.target.textContent)
+                }}
+
+                onclickB={(e) => {
+                  capture_answered_question(qust.newId, e.target.textContent)
+                }}
+
+                onclickC={(e) => {
+                  capture_answered_question(qust.newId, e.target.textContent)
+                }}
+
+                optionA={qust.a}
+                optionB={qust.b}
+                optionC={qust.c}
+              />
             </div>
+          )}
+
+          <div className="d-flex justify-content-end1">
+            <button className='btn border py-2 px-5 shadow-sm' onClick={(e) => {
+              e.preventDefault()
+              display_warning_msg()
+            }}>Submit</button>
           </div>
 
+        </section>
 
 
-
-          {/* **************************** Obejective question section ****************************
-          <div className={objective_questions !== '' && objective_questions[0].question_type == 'objective' && switch_questions == 'objective' ? 'col-md-8 mt-5 py-5 pl-5' : 'd-none'}>
-              <div className="h4 font-weight-bold">Questions: </div>
-                <span>
-                  <p className="course text-uppercase ml-1">{theory_questions !== '' ? theory_questions[0].courseTitle : null}</p>
-                </span>
-              {objective_questions != '' && objective_questions.map((qust, index) => 
-              <div key={index} className='col-md-6'>
-                <div className="d-flex">
-                  <div>{index + 1}</div>
-                  <p className='text-capitalize text-dark ml-3'>{qust.question}</p>
-                </div>
-
-                <div className="answers d-flex flex-column text-capitalize mb-5 py-4 border-bottom">
-                  <span>
-                    <input type="radio" className='my-2' name={index} id={index}/>
-
-                    <label htmlFor={index} className='ml-3' onClick={(e) => {
-                      handleAns(e.target.textContent, qust.newId)
-                    }}>{qust.a}</label>
-
-                  </span>
-                  <span>
-                    <input type="radio" className='my-2' name={qust.b} id={qust.b}/>
-
-                    <label htmlFor={qust.b} className='ml-3' onClick={(e) => {
-                      handleAns(e.target.textContent, qust.newId)
-                    }}>{qust.b}</label>
-
-                  </span>
-                  
-                  <span>
-                    <input type="radio" className='my-2' name={qust.c} id={qust.c}/>
-
-                    <label htmlFor={qust.c} className='ml-3' onClick={(e) => {
-                      handleAns(e.target.textContent, qust.newId)
-                    }}>{qust.c}</label>
-
-                  </span>
-                </div>
-              </div>
-            )}
-
-            <div className="d-flex justify-content-between">
-              <button className='btn btn-warning py-3 px-5 text-dark shadow-sm' onClick={(e) => {
-                e.preventDefault()
-                cancel(e)
-              }}>Cancel</button>
-
-              <button className='btn btn-dark py-3 px-5 text-white shadow-sm' onClick={(e) => {
-                student_result()
-                e.preventDefault()
-              }}>Submit</button>
-            </div>
-          </div> */}
-
-
-        </div>
-
-
-
-
-
-
-
-  </div>
+      <Warning msg={WARNING_MSG} />
+      <SuccessMsg msg={SUCCESS_MSG}/>
+    </div>
+    </>
   )
+
+  
 }
 
 export default Assignment_page

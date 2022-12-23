@@ -35,31 +35,45 @@ const Sign_up = () => {
     }
 
   return (
-    <form className={swich_form != 'SIGN_IN'  ? "scale_out" : "sign_up scale_in form-group px-lg-5"}>
-        <div className="display-6 font-weight-bold text-center mt-5 mt-lg-5"><span className="text-warning">Sign</span> up</div>
+    <form className={swich_form != 'SIGN_IN'  ? "scale_out d-none" : "sign_up scale_in form-group shadow-sm"}>
+        <div className="text-center">
+            <span className="text-warning h6" style={{fontWeight: '700'}}>SIGN UP</span> 
+        </div>
 
-        <div className="px-lg-5">
+        <div className="px-lg-50">
 
-            <InputField type={'text'} placeholder={'Firstname'} onchange={(e) => {
+            <InputField 
+                type={'text'}
+                placeholder={'Firstname'} 
+                onchange={(e) => {
                 setServerMsg('')
                 setFirstname(e.target.value)}}
             />
-            <InputField type={'text'} placeholder={'Lastname'} onchange={(e) => {
+            <InputField 
+                type={'text'} 
+                placeholder={'Lastname'} 
+                onchange={(e) => {
                 setServerMsg('')
                 setLastname(e.target.value)
             }}/>
 
-            <InputField type={'text'} placeholder={'Department'} onchange={(e) => {
+            <InputField 
+                type={'text'} 
+                placeholder={'Department'} 
+                onchange={(e) => {
                 setServerMsg('')
                 setDept(e.target.value)
             }}/>
-            <InputField type={'text'} placeholder={'Mouau/20/adm/1059'} onchange={(e) => {
+            <InputField 
+                type={'text'} 
+                placeholder={'Mouau/20/adm/1059'} 
+                onchange={(e) => {
                 setServerMsg('')
                 setReg_no(e.target.value)
             }}/>
         </div>
 
-        <div className="my-3 px-lg-4">
+        <div className="my-3">
             <Form_btn btnText={'Sign up'} onclick={(e) => {
                 e.preventDefault() 
                 handle_sign_up()
