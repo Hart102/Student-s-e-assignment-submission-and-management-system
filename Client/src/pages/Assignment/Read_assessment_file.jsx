@@ -38,7 +38,7 @@ const Read_assessment_file = () => {
         )
 
         // Breaking the text to newline 
-        let result = response.data.replace(/\n/g, '<br />')
+        let result = response.data.replace(/\n/g, '<br /><br />')
         elementSelector('.display').innerHTML = result
     }
 

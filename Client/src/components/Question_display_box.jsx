@@ -60,17 +60,20 @@ const Question_display_box = () => {
     }
     
     //--------------- Delete question function ---------------
-    const delete_question = async () => {
-        if (WARNING_MSG_RESPONSE == 'Yes') {
+    const delete_question = async (id) => {
+        // if (WARNING_MSG_RESPONSE == 'Yes'){
             const response = await PostData(
-                'http://localhost:5000/delete_question', {id: questionId}
+                'http://localhost:5000/delete_question', {id: id}
             )
             setSetQuestionId('')
-            dispatch(warningMsgResponse('')) //Warning msg
+            // dispatch(warningMsgResponse('')) //Warning msg
             dispatch(successMsg(response.data)) //Success msg
-        }
+        // }
     }
-    delete_question()
+    // delete_question()
+
+
+    
 
     
     useEffect(() => {
@@ -101,8 +104,8 @@ const Question_display_box = () => {
                 {question !== '' && question.map(quest => 
                 quest.adminId === adminId && //Preventing admin from seeing another admins post
 
-                    <tbody>
-                        <tr  key={quest._id}>
+                    <tbody key={quest._id}>
+                        <tr >
                             <td className='p-3'>{quest.courseTitle}</td>
                             <td className='p-3'>{quest.department}</td>
                             <td className='p-3'>{quest.level}</td>
@@ -117,8 +120,9 @@ const Question_display_box = () => {
                             </td>
                             <td className='pointer' 
                                 onClick={() => {
-                                    display_warning_msg()
-                                    setSetQuestionId(quest.uniqueId)}}>
+                                    // display_warning_msg()
+                                    delete_question(quest.uniqueId)
+                                }}>
                                     <div className="btn shadow-sm action">Delete</div>
                             </td>
                         </tr>

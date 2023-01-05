@@ -187,69 +187,34 @@ app.post('/written_test', (req, res) => {
 })
 
 
-//*** Confirm if student have participated in a particuler assesment before, 
-//to make sure he or she do not write any asseement multiple times ***
-app.post('/confirm_participant', (req, res) => { 
-    const { error, value } = level_auth.validate(req.body.assignmentInfo)
-
-    if (error) {
-        res.json(error.message)
-
-    }else{
-        written_test_collection.find({ courseTitle: value.course, 
-            department: value.dept, level: value.level }).toArray().then(result => {
-            //Checking if the student assesment array is empty. If it is, then the student is a new student
-            if (req.body.user_assesment.length == 0) { 
-                {result.length == 0 ? res.json({error: 'Course not avaliable'}) : res.json(result)}
-                
-            }else{ 
-                //If user is requesting for none existing assignment
-                let assementArray = [], unWritten;
-                if (result.length == 0 || result == null || result == []){
-                    res.json({error: 'no avaliable assesment'})
-        
-                }else{
-                    const difference = result.filter(obj => !req.body.user_assesment.includes(obj))
-
-                    // -------Return unwritten assesments -------
-                    req.body.user_assesment.map(response => {
-                        // const unWritten = difference.find(obj => obj.uniqueId !== response.uniqueId)
-                        // assementArray.push(difference.find(obj => obj.uniqueId !== response.uniqueId))
-                        difference.find(obj => {
-                            if (obj.uniqueId !== response.uniqueId) {
-                                // assementArray.push(obj)
-                                unWritten = obj
-                            }
-                        })
-                    })
-
-                    assementArray.push(unWritten)
-                    
-                    if(assementArray) {
-                     res.json(assementArray);
-
-                    }else{
-                        res.json({error: 'no avaliable assesment'})
-                    }
-
-
-
-                    // res.json(assementArray)
-                    // if(assementArray) {
-                    //     assementArray = []
-                    // }else{
-                    //     res.json({error: 'no avaliable assesment'})
-                    // }
-                }
-            }
-        })
-    }
-    
-})
-
 
 
 //************ Getting the assesment the students wants to write **************
+app.post('/fetch_avaliable_questions', (req, res) => {
+    const { dept, level,   } = req.body
+
+    written_test_collection.find(
+        {
+            department: dept,
+            level: level
+        }
+    ).toArray().then(result => {
+        if (result.length != 0) {
+            res.json(result)
+
+        }else{
+            res.json({err: 'No assignment'})
+        }
+    })
+    .catch(err => {
+        if(err) {
+            res.json({err: 'An error occured, Please try again!'})
+        }
+    })   
+})
+
+
+// Fetching the particular assignment the student wants to write at the moment
 app.post('/fetch_selected_question', (req, res) => {
     const { courseTitle, department, level, date, question_type } = req.body
 
@@ -261,6 +226,9 @@ app.post('/fetch_selected_question', (req, res) => {
 
     }).catch(err => console.log(err))
 })
+
+
+
 
 
 // Storing student assesment answers in a text file, with a tracking id, that wil be stored in his assesment history,

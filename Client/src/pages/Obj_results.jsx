@@ -60,7 +60,7 @@ const Obj_results = () => {
             student.assesments.map((assesment) =>
             sort_participated_students.uniqueId === assesment.uniqueId &&
 
-                <tbody>
+                <tbody key={index}>
                     <tr>
                         <td className="p-3">{index += 1}</td>
                         <td className="p-3 text-capitalize">{student.firstname}</td>

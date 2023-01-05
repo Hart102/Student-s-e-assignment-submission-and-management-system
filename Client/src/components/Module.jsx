@@ -16,7 +16,7 @@ export class QuestionTemplate {
         score: score,
         question_type: question_type,
         uniqueId: uniqueId,
-        studentAnswer: studentAnswer
+        studentAnswer: studentAnswer,
         })
     }
 }

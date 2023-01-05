@@ -1,11 +1,10 @@
 import '../Assignment/Assignment.css'
 import { useEffect, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, Outlet } from 'react-router-dom'
 import { useSelector, useDispatch } from "react-redux"
 
 import { warningMsg, 
-  warningMsgResponse, 
-  switch_forms, successMsg 
+  warningMsgResponse, switch_forms, successMsg 
 } from '../../Actions'
 
 import PostData from '../../components/PostData'
@@ -15,8 +14,6 @@ import SuccessMsg from '../../components/Model/SuccessMsg'
 import ObjComp from '../../components/AssignmentComp/ObjComp'
 import TheoryComp from '../../components/AssignmentComp/TheoryComp'
 import { QuestionTemplate } from '../../components/Module'
-import { elementSelector } from '../../components/Module'
-
 
 
 
@@ -25,28 +22,30 @@ const Assignment_page = () => {
 
   const location = useLocation(),
   navigation = useNavigate(),
-  dispatch = useDispatch()
+  dispatch = useDispatch();
+
   const WARNING_MSG = useSelector(state => state.CaptureWarningMsg)
   const SUCCESS_MSG = useSelector(state => state.CaptureSuccessMsg)
   const WARNING_MSG_RESPONSE = useSelector(state => state.CaptureWarningMsgResponse);
   
-  // const [serverResponse, setServerResponse] = useState('')
   const [theory_questions, setTheory_questions] = useState('')
   const [objective_questions, setObjective_questions] = useState('')
   const [switch_questions, setSwitch_questions] = useState('')
 
-  
-  
+  const [studentAnswer, setStudentAnswer] = useState('');
+  const [studentId, setStudentId] = useState(location.state.student.newId);
 
-//************* Choose assesment functionality *********************
+
+  //************* Choose assesment functionality *********************
   const select_assesment = (id) => {
-    location.state.map(questions => {
+    location.state.Assignments.map(questions => {
       if (questions._id == id) {
         fetch_selected_questions(questions)
         setSwitch_questions(questions.question_type)
       }
     })
   }
+
 
   //*********** Fetch selected questions functionality **********************
   const fetch_selected_questions = async (question) => { 
@@ -60,12 +59,6 @@ const Assignment_page = () => {
 
   } 
 
-
-  //*********** Theory question properties ******************  
-  const [studentAnswer, setStudentAnswer] = useState('');
-  const student = useSelector(state => state.logged_in_user);
-  const [studentId, setStudentId] = useState(student.newId);
-
   //-------------- Display warning msg --------------
   const display_warning_msg  = () => {    
     dispatch(warningMsg('Are you sure you want to submit ?'))
@@ -75,6 +68,7 @@ const Assignment_page = () => {
 
   // --------------- Objective question properties --------------- 
   var answers_container = [];
+  var calculateStudentScore
   const removeDuplicates = (arr) => [...new Set(arr)] // Remove duoble answers
    
   // Capture clicked questions and the student answer 
@@ -95,38 +89,12 @@ const Assignment_page = () => {
   }
 
 
-  let arr = []
+
+  
   if (theory_questions) {
     //------------ Submite theory assessment ------------
-    let len = 1
-    window.addEventListener('keyup', (e) => {
-      if ((e.keyCode) == 13) {
-        // len ++
-        // arr.push(document.querySelector('#theory').value)
-        let result = document.querySelector('#theory').value.replace(/\n/g, `${'\n' + "" + len + " "}`)
-        // document.querySelector('#theory').value = result
-
-        console.log(result)
-      }
-    })
-
-    // window.onkeyup
-
-
-
-
-
     const submit_theory = async () => {
-      
-      // arr.push(document.querySelector('#theory').value)
-      // let result = document.querySelector('#theory').value.replace(/\n/g, `${'\n' + "" + 2 + " "}`)
-      // document.querySelector('#theory').value = result
-
-      
-
-
-
-      
+    
      var data = new QuestionTemplate (
       studentId,
       theory_questions[0].courseTitle,
@@ -139,12 +107,12 @@ const Assignment_page = () => {
       studentAnswer
      )
      
-    //  const response = await PostData(
-    //   'http://localhost:5000/store_student_assesment_file', data
-    // ) 
-    //  if(response.data) {
-    //   dispatch(successMsg(response.data))
-    //  }
+     const response = await PostData(
+      'http://localhost:5000/store_student_assesment_file', data
+     ) 
+     if(response.data) {
+      dispatch(successMsg(response.data))
+     }
    }
  
    if (WARNING_MSG_RESPONSE === 'Yes') {
@@ -157,10 +125,11 @@ const Assignment_page = () => {
   }else{
     // calculate student Score 
     let FinalScore;
-    const calculateStudentScore = () => {
+    calculateStudentScore = () => {
       document.querySelectorAll('.student-answers').forEach(ans => {
         answers_container.push(ans.textContent)
-        return FinalScore = removeDuplicates(answers_container).length
+        FinalScore = removeDuplicates(answers_container)
+        return FinalScore
       })
     }
     
@@ -168,6 +137,7 @@ const Assignment_page = () => {
     // --------------- Objective question properties --------------- 
     const student_result = async () => {// Calculating result
       calculateStudentScore()
+      let score = FinalScore.length
 
       var result = new QuestionTemplate (
         studentId,
@@ -175,11 +145,11 @@ const Assignment_page = () => {
         objective_questions[0].level,
         objective_questions[0].department,
         objective_questions[0].date,
-        FinalScore,
+        score,
         'objective',
         objective_questions[0].uniqueId,
       )
-      
+
       // Sending result to the server
       const response = await PostData('http://localhost:5000/post_objective_result', result) 
       if (response.data == 'true') {
@@ -245,7 +215,7 @@ const Assignment_page = () => {
           <ul 
             className='menu-list list-unstyled col-md-2 text-capitaliz py-5 px-3 my-5 bg-white border-right'>
             <b>Assessment:</b>
-            {location.state ? location.state.map((questions, indx) => 
+            {location.state ? location.state.Assignments.map((questions, indx) => 
             // ********* Assessment List ******************
               <div className="my-5 pointer text-capitalize" key={indx} onClick={() => {
                 select_assesment(questions._id )
@@ -327,14 +297,17 @@ const Assignment_page = () => {
                 question={qust.question}
                 
                 onclickA={(e) => {
+                  calculateStudentScore()
                   capture_answered_question(qust.newId, e.target.textContent)
                 }}
 
                 onclickB={(e) => {
+                  calculateStudentScore()
                   capture_answered_question(qust.newId, e.target.textContent)
                 }}
 
                 onclickC={(e) => {
+                  calculateStudentScore()
                   capture_answered_question(qust.newId, e.target.textContent)
                 }}
 
@@ -357,6 +330,8 @@ const Assignment_page = () => {
 
       <Warning msg={WARNING_MSG} />
       <SuccessMsg msg={SUCCESS_MSG}/>
+
+      <Outlet />
     </div>
     </>
   )

@@ -6,7 +6,7 @@ import PostData from "../../components/PostData";
 import { lecturer_session } from "../../Actions";
 
 import Axios from "axios";
-import { useNavigate } from 'react-router-dom'
+import { useNavigate} from 'react-router-dom'
 
 
 const Lecturer_login = () => {
@@ -43,7 +43,9 @@ const Lecturer_login = () => {
     return(
 
         <form className="sign_in scale_in form-group px-5 py-5 my-5 col-md-5 mx-auto">
-        <div className="display-6 font-weight-bold text-center my-5"><span className="text-warning">STA<span className="text-dark">FF</span> LOG</span>IN</div>
+        <div className="display-6 font-weight-bold text-center my-5">
+            <span className="text-warning">STA<span className="text-dark">FF</span> LOG</span>IN
+        </div>
         <div className="mx-lg-5">
             <InputField type={'text'} placeholder={'username'} onchange={(e) => {
                 setServerMsg('')

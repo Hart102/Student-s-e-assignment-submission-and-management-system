@@ -21,10 +21,10 @@ import Lecturer_login from "./pages/Admin/Lecturer_login";
 import SetTheory_quest from "./components/SetTheory_quest";
 import SetObjQuestion from "./components/SetObjQuestion";
 import ReadQuestions from "./pages/Admin/ReadQuestions";
+import Level from "./pages/Level";
 
 import Sign_in from "./components/Cover_components/Form/Sign_in";
 import Sign_up from "./components/Cover_components/Form/Sign_up";
-import Level from "./components/Cover_components/Form/Level";
 
 const App = () => {
   return (
@@ -32,6 +32,7 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Cover />} />
         <Route path="/assignment/menu" element={<Assignment_menu />} />
+        <Route path="/level" element={<Level />} />
         <Route path="/assignment" element={<Assignment_page />} />
 
         <Route path="/admin" element={<Admin />} >

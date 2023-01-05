@@ -35,7 +35,7 @@ const Sign_up = () => {
     }
 
   return (
-    <form className={swich_form != 'SIGN_IN'  ? "scale_out d-none" : "sign_up scale_in form-group shadow-sm"}>
+    <form className={swich_form != 'SIGN_IN'  ? "d-none" : "sign_up form-group p-5 shadow-sm"}>
         <div className="text-center">
             <span className="text-warning h6" style={{fontWeight: '700'}}>SIGN UP</span> 
         </div>
